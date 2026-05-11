@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地下城与勇士 - DNF官方宣传站</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: #0a0e17;
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://dnf.qq.com/daojv2/static/20230628/b5d28d0c/img/bg.3f5b96c.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #ff3300;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #ff3300, 0 0 10px #ff3300;
+            }
+            to {
+                text-shadow: 0 0 10px #ff6600, 0 0 20px #ff9900;
+            }
+        }
+
+        .hero p {
+            font-size: 1.8rem;
+            max-width: 800px;
+            margin-bottom: 30px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(to right, #ff3300, #cc0000);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            text-decoration: none;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 51, 0, 0.4);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 51, 0, 0.6);
+            background: linear-gradient(to right, #ff6600, #cc3300);
+        }
+
+        .features {
+            padding: 80px 20px;
+            background: #050710;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: #ff3300;
+            text-shadow: 0 0 5px rgba(255, 51, 0, 0.3);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: #0c1321;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid #1a2942;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-img {
+            height: 200px;
+            background: #1a2942;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+        }
+
+        .feature-content {
+            padding: 25px;
+        }
+
+        .feature-content h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #ffcc00;
+        }
+
+        .classes {
+            padding: 80px 20px;
+            background: #080c15;
+        }
+
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .class-card {
+            background: #0c1321;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            border: 1px solid #1a2942;
+        }
+
+        .class-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #ff3300;
+        }
+
+        .class-img {
+            height: 250px;
+            background: #1a2942;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .class-content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .class-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #ffcc00;
+        }
+
+        .event {
+            padding: 100px 20px;
+            background: linear-gradient(90deg, #050710 0%, #1a0c21 50%, #050710 100%);
+            text-align: center;
+        }
+
+        .event-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(10, 15, 30, 0.8);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #ff3300;
+        }
+
+        .event h2 {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            color: #ff3300;
+        }
+
+        .event p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .countdown-item {
+            background: #0c1321;
+            padding: 15px 25px;
+            border-radius: 10px;
+            min-width: 100px;
+        }
+
+        .countdown-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff3300;
+        }
+
+        .countdown-label {
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        footer {
+            background: #03050a;
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid #1a2942;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .footer-column h3 {
+            color: #ffcc00;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: #0c1321;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: #ff3300;
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .hero p {
+                font-size: 1.3rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <h1>地下城与勇士</h1>
+        <p>15年经典IP，格斗之王，再掀狂潮！超爽快打击感，百变职业组合，等你来战！</p>
+        <a href="#" class="cta-button">立即下载</a>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">游戏特色</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-img">⚔️</div>
+                    <div class="feature-content">
+                        <h3>极致格斗体验</h3>
+                        <p>百万连招组合，真实打击反馈，每一击都让你感受拳拳到肉的爽快感！</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-img">🛡️</div>
+                    <div class="feature-content">
+                        <h3>百变职业体系</h3>
+                        <p>50+职业自由搭配，转职觉醒随心选择，打造你的专属战斗风格！</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-img">🏰</div>
+                    <div class="feature-content">
+                        <h3>史诗级副本挑战</h3>
+                        <p>数百个精心设计的副本，超震撼BOSS战，与好友组队征服一切！</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="classes">
+        <div class="container">
+            <h2 class="section-title">热门职业</h2>
+            <div class="classes-grid">
+                <div class="class-card">
+                    <div class="class-img">单职业</div>
+                    <div class="class-content">
+                        <h3>鬼剑士</h3>
+                        <p>均衡的攻防能力，多变的职业路线，新手入门最佳选择！</p>
+                    </div>
+                </div>
+                <div class="class-card">
+                    <div class="class-img">单职业</div>
+                    <div class="class-content">
+                        <h3>格斗家</h3>
+                        <p>近战爆发王者，灵活的身法，连招无限的战斗风格！</p>
+                    </div>
+                </div>
+                <div class="class-card">
+                    <div class="class-img">单职业</div>
+                    <div class="class-content">
+                        <h3>神枪手</h3>
+                        <p>远程火力压制，精准射击与华丽战术，战场统治者！</p>
+                    </div>
+                </div>
+                <div class="class-card">
+                    <div class="class-img">单职业</div>
+                    <div class="class-content">
+                        <h3>魔法师</h3>
+                        <p>元素力量掌控者，范围伤害之王，华丽特效震撼全场！</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="event">
+        <div class="event-content">
+            <h2>15周年庆典活动</h2>
+            <p>庆祝DNF 15周年，超值福利大放送！登录即送稀有装扮、史诗装备自选礼盒、100万金币，更有机会抽取限量版手办！活动期间经验值提升50%，副本掉落率翻倍！</p>
+
+            <div class="countdown">
+                <div class="countdown-item">
+                    <div class="countdown-number">05</div>
+                    <div class="countdown-label">天</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number">12</div>
+                    <div class="countdown-label">时</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number">30</div>
+                    <div class="countdown-label">分</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number">45</div>
+                    <div class="countdown-label">秒</div>
+                </div>
+            </div>
+
+            <a href="#" class="cta-button">立即参与活动</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>关于DNF</h3>
+                <p>地下城与勇士（Dungeon & Fighter）是由Neople开发，腾讯游戏在中国大陆地区运营的2D横版格斗网络游戏。</p>
+            </div>
+            <div class="footer-column">
+                <h3>快速链接</h3>
+                <p><a href="#" style="color: #e0e0e0;">官方网站</a></p>
+                <p><a href="#" style="color: #e0e0e0;">客服中心</a></p>
+                <p><a href="#" style="color: #e0e0e0;">下载游戏</a></p>
+            </div>
+            <div class="footer-column">
+                <h3>关注我们</h3>
+                <div class="social-links">
+                    <a href="#">Weibo</a>
+                    <a href="#">WeChat</a>
+                    <a href="#">QQ</a>
+                    <a href="#">Bilibili</a>
+                </div>
+            </div>
+        </div>
+        <p style="margin-top: 30px;">&copy; 2026 腾讯游戏. 保留所有权利. 地下城与勇士是Neople和腾讯游戏的注册商标.</p>
+    </footer>
+</body>
+</html>

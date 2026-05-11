@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>山水风景</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    overflow: hidden;
+    font-family: 'Georgia', 'Noto Serif SC', serif;
+  }
+
+  .scene {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: linear-gradient(180deg,
+      #1a1a2e 0%, #16213e 20%, #0f3460 40%,
+      #e94560 55%, #f5a623 65%, #ffcc80 75%,
+      #87ceeb 85%, #b8e6f0 100%
+    );
+  }
+
+  /* 星星 */
+  .stars {
+    position: absolute;
+    width: 100%; height: 35%;
+    top: 0; left: 0;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur) ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  /* 月亮 */
+  .moon {
+    position: absolute;
+    width: 80px; height: 80px;
+    top: 8%; right: 15%;
+    background: radial-gradient(circle at 35% 35%, #fffde7, #f9d71c);
+    border-radius: 50%;
+    box-shadow: 0 0 40px 15px rgba(255, 235, 150, 0.4),
+                0 0 80px 30px rgba(255, 235, 150, 0.2);
+  }
+
+  /* 太阳 */
+  .sun {
+    position: absolute;
+    width: 90px; height: 90px;
+    bottom: 28%; left: 50%;
+    transform: translateX(-50%);
+    background: radial-gradient(circle at 40% 40%, #fff7e6, #ff8c00);
+    border-radius: 50%;
+    box-shadow: 0 0 60px 25px rgba(255, 140, 0, 0.5),
+                0 0 120px 50px rgba(255, 100, 0, 0.25);
+  }
+
+  /* 远山 */
+  .mountains-back {
+    position: absolute;
+    bottom: 25%; left: 0;
+    width: 100%; height: 40%;
+    clip-path: polygon(0% 80%, 10% 40%, 20% 55%, 30% 25%, 40% 45%,
+                       50% 20%, 55% 35%, 65% 30%, 75% 50%, 85% 35%,
+                       95% 48%, 100% 30%, 100% 100%, 0% 100%);
+    background: linear-gradient(180deg, #4a6741, #2d4a2a);
+  }
+  .mountains-front {
+    position: absolute;
+    bottom: 25%; left: 0;
+    width: 100%; height: 30%;
+    clip-path: polygon(0% 70%, 15% 45%, 25% 60%, 35% 35%, 45% 55%,
+                       55% 30%, 70% 50%, 80% 40%, 90% 55%, 100% 35%,
+                       100% 100%, 0% 100%);
+    background: linear-gradient(180deg, #3a5a30, #1e3a1a);
+  }
+
+  /* 湖水 */
+  .lake {
+    position: absolute;
+    bottom: 10%; left: 0;
+    width: 100%; height: 18%;
+    background: linear-gradient(180deg,
+      rgba(70, 130, 180, 0.6),
+      rgba(30, 80, 140, 0.8),
+      rgba(20, 60, 100, 0.9)
+    );
+    border-radius: 50% / 30% 30% 0 0;
+    box-shadow: inset 0 10px 30px rgba(255, 255, 255, 0.1);
+  }
+  .lake::after {
+    content: '';
+    position: absolute;
+    top: 40%; left: 15%;
+    width: 200px; height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: rotate(-2deg);
+    box-shadow: 300px 20px 0 rgba(255,255,255,0.20),
+                500px -10px 0 rgba(255,255,255,0.15),
+                100px 35px 0 rgba(255,255,255,0.18);
+  }
+
+  /* 前景草地 */
+  .ground {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 12%;
+    background: linear-gradient(180deg, #2d5a1e, #1a3a10);
+  }
+
+  /* 树木 */
+  .tree {
+    position: absolute;
+    bottom: 12%;
+  }
+  .tree .trunk {
+    width: 8px; height: 50px;
+    background: linear-gradient(180deg, #5d3a1a, #3d2010);
+    margin: 0 auto;
+    border-radius: 2px;
+  }
+  .tree .canopy {
+    width: 0; height: 0;
+    border-left: 35px solid transparent;
+    border-right: 35px solid transparent;
+    border-bottom: 70px solid #2d5a1e;
+    position: relative;
+    top: 5px;
+    left: -31px;
+  }
+  .tree .canopy::after {
+    content: '';
+    position: absolute;
+    width: 0; height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 50px solid #3a6e28;
+    top: 20px; left: -25px;
+  }
+
+  .tree1 { left: 10%; }
+  .tree2 { left: 25%; }
+  .tree3 { left: 78%; }
+  .tree4 { left: 88%; }
+
+  /* 飞鸟 */
+  .bird {
+    position: absolute;
+    animation: fly var(--fly-dur) ease-in-out infinite;
+    animation-delay: var(--fly-delay);
+  }
+  .bird::before, .bird::after {
+    content: '︿';
+    position: absolute;
+    color: #333;
+    font-size: 16px;
+  }
+  .bird::before { top: 0; left: 0; }
+  .bird::after { top: 0; left: 12px; transform: scaleX(-1); }
+
+  @keyframes fly {
+    0%   { transform: translate(0, 0); }
+    25%  { transform: translate(30px, -15px); }
+    50%  { transform: translate(60px, -5px); }
+    75%  { transform: translate(90px, -20px); }
+    100% { transform: translate(120px, 0); }
+  }
+
+  /* 云朵 */
+  .cloud {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    box-shadow: 30px -10px 0 rgba(255,255,255,0.5),
+                60px 5px 0 rgba(255,255,255,0.6),
+                90px -5px 0 rgba(255,255,255,0.4),
+                45px 10px 0 rgba(255,255,255,0.5);
+    animation: drift var(--drift-dur) linear infinite;
+  }
+  @keyframes drift {
+    0%   { transform: translateX(-200px); }
+    100% { transform: translateX(calc(100vw + 200px)); }
+  }
+
+  /* 标题文字 */
+  .title {
+    position: absolute;
+    top: 60%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: clamp(24px, 5vw, 48px);
+    letter-spacing: 0.3em;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    pointer-events: none;
+    z-index: 10;
+  }
+  .subtitle {
+    position: absolute;
+    top: 70%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: clamp(12px, 2vw, 18px);
+    letter-spacing: 0.5em;
+    pointer-events: none;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div class="scene" id="scene">
+  <div class="stars" id="stars"></div>
+  <div class="moon"></div>
+  <div class="sun"></div>
+
+  <!-- 云朵 -->
+  <div class="cloud" style="width:80px;height:30px;top:12%;left:10%;--drift-dur:35s;"></div>
+  <div class="cloud" style="width:60px;height:25px;top:18%;left:50%;--drift-dur:28s;"></div>
+  <div class="cloud" style="width:100px;height:35px;top:8%;left:70%;--drift-dur:40s;"></div>
+
+  <!-- 飞鸟 -->
+  <div class="bird" style="top:30%;left:20%;--fly-dur:4s;--fly-delay:0s;"></div>
+  <div class="bird" style="top:35%;left:22%;--fly-dur:5s;--fly-delay:1s;"></div>
+  <div class="bird" style="top:28%;left:24%;--fly-dur:4.5s;--fly-delay:2s;"></div>
+
+  <!-- 远山 -->
+  <div class="mountains-back"></div>
+  <div class="mountains-front"></div>
+
+  <!-- 湖水 -->
+  <div class="lake"></div>
+
+  <!-- 树木 -->
+  <div class="tree tree1"><div class="canopy"></div><div class="trunk"></div></div>
+  <div class="tree tree2"><div class="canopy"></div><div class="trunk"></div></div>
+  <div class="tree tree3"><div class="canopy"></div><div class="trunk"></div></div>
+  <div class="tree tree4"><div class="canopy"></div><div class="trunk"></div></div>
+
+  <!-- 草地 -->
+  <div class="ground"></div>
+
+  <!-- 文字 -->
+  <div class="title">山 水 如 画</div>
+  <div class="subtitle">—— 风景这边独好 ——</div>
+</div>
+
+<script>
+// 生成星星
+const starsContainer = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const star = document.createElement('div');
+  star.classList.add('star');
+  const size = Math.random() * 3 + 1;
+  star.style.cssText = `
+    width:${size}px; height:${size}px;
+    top:${Math.random() * 100}%;
+    left:${Math.random() * 100}%;
+    --dur:${Math.random() * 3 + 1.5}s;
+    --delay:${Math.random() * 3}s;
+  `;
+  starsContainer.appendChild(star);
+}
+
+// 点击切换场景色调
+const scene = document.getElementById('scene');
+const gradients = [
+  // 清晨
+  'linear-gradient(180deg, #1a1a2e 0%, #16213e 20%, #0f3460 40%, #e94560 55%, #f5a623 65%, #ffcc80 75%, #87ceeb 85%, #b8e6f0 100%)',
+  // 正午
+  'linear-gradient(180deg, #1e3c72 0%, #2a5298 30%, #87ceeb 55%, #90d5ec 70%, #b0e0e6 85%, #c8e6c9 100%)',
+  // 黄昏
+  'linear-gradient(180deg, #2c1b4d 0%, #4a2c5e 20%, #c06c84 40%, #f67280 50%, #f8b195 65%, #fbc687 80%, #c8d6e5 100%)',
+  // 夜景
+  'linear-gradient(180deg, #0a0a1a 0%, #0d1b33 30%, #142850 50%, #1a3a5c 70%, #0f2847 100%)',
+];
+let currentGradient = 0;
+scene.addEventListener('click', () => {
+  currentGradient = (currentGradient + 1) % gradients.length;
+  scene.style.background = gradients[currentGradient];
+});
+</script>
+</body>
+</html>

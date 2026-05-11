@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>五子棋</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .container {
+    background: #deb887;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  h1 { font-size: 24px; color: #5d3a1a; }
+  .turn {
+    font-size: 18px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 8px;
+    background: #c4a46c;
+    color: #3d2a0e;
+  }
+  .turn .stone {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 6px;
+    border: 1px solid rgba(0,0,0,.2);
+  }
+  .turn .stone.black { background: #222; }
+  .turn .stone.white { background: #f0f0f0; }
+  canvas {
+    display: block;
+    margin: 0 auto;
+    cursor: pointer;
+    border-radius: 4px;
+    background: #deb887;
+  }
+  .info {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 15px;
+    color: #5d3a1a;
+  }
+  .info.win { font-weight: 700; font-size: 18px; color: #c0392b; }
+  .btn {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    background: #5d3a1a;
+    color: #f0e6d3;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .btn:hover { background: #7a4e28; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>五子棋</h1>
+    <div class="turn" id="turnDisplay">
+      <span class="stone black"></span>黑棋走
+    </div>
+  </div>
+  <canvas id="board"></canvas>
+  <div class="info" id="status">黑棋先走，点击棋盘落子</div>
+  <button class="btn" id="restart">重新开始</button>
+</div>
+<script>
+const SIZE = 15;
+const CELL = 36;
+const PADDING = 28;
+const BOARD_PX = CELL * (SIZE - 1) + PADDING * 2;
+const STONE_R = CELL * 0.43;
+
+const canvas = document.getElementById('board');
+const ctx = canvas.getContext('2d');
+canvas.width = canvas.height = BOARD_PX;
+
+let board = Array.from({length: SIZE}, () => Array(SIZE).fill(null));
+let currentPlayer = 'black';
+let gameOver = false;
+let moveHistory = [];
+let winCells = [];
+
+function boardX(col) { return PADDING + col * CELL; }
+function boardY(row) { return PADDING + row * CELL; }
+
+function drawBoard() {
+  ctx.clearRect(0, 0, BOARD_PX, BOARD_PX);
+
+  // grid lines
+  ctx.strokeStyle = '#5d3a1a';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < SIZE; i++) {
+    ctx.beginPath(); ctx.moveTo(boardX(i), boardY(0)); ctx.lineTo(boardX(i), boardY(SIZE-1)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(boardX(0), boardY(i)); ctx.lineTo(boardX(SIZE-1), boardY(i)); ctx.stroke();
+  }
+
+  // star points (天元 and 四星)
+  const stars = [[7,7],[3,3],[11,3],[3,11],[11,11]];
+  ctx.fillStyle = '#5d3a1a';
+  for (const [c,r] of stars) {
+    ctx.beginPath(); ctx.arc(boardX(c), boardY(r), 3.5, 0, Math.PI*2); ctx.fill();
+  }
+
+  // stones
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (!board[r][c]) continue;
+      const x = boardX(c), y = boardY(r);
+      const grad = ctx.createRadialGradient(x-4, y-4, 2, x, y, STONE_R);
+      if (board[r][c] === 'black') {
+        grad.addColorStop(0, '#555');
+        grad.addColorStop(1, '#111');
+      } else {
+        grad.addColorStop(0, '#fff');
+        grad.addColorStop(1, '#ccc');
+      }
+      ctx.beginPath();
+      ctx.arc(x, y, STONE_R, 0, Math.PI*2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.strokeStyle = board[r][c] === 'black' ? '#000' : '#999';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+  }
+
+  // highlight winning line
+  ctx.strokeStyle = '#e74c3c';
+  ctx.lineWidth = 3;
+  for (const [r,c] of winCells) {
+    ctx.beginPath(); ctx.arc(boardX(c), boardY(r), STONE_R+2, 0, Math.PI*2); ctx.stroke();
+  }
+}
+
+function checkWin(row, col, player) {
+  const directions = [[1,0],[0,1],[1,1],[1,-1]];
+  for (const [dr, dc] of directions) {
+    let cells = [[row, col]];
+    for (let dir = -1; dir <= 1; dir += 2) {
+      for (let step = 1; step < 5; step++) {
+        const r = row + dr * dir * step;
+        const c = col + dc * dir * step;
+        if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) break;
+        if (board[r][c] !== player) break;
+        cells.push([r, c]);
+      }
+    }
+    if (cells.length >= 5) return cells;
+  }
+  return null;
+}
+
+function isBoardFull() {
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++)
+      if (!board[r][c]) return false;
+  return true;
+}
+
+function placeStone(row, col) {
+  if (gameOver || board[row][col]) return false;
+
+  board[row][col] = currentPlayer;
+  moveHistory.push({row, col, player: currentPlayer});
+
+  const result = checkWin(row, col, currentPlayer);
+  if (result) {
+    winCells = result;
+    gameOver = true;
+    drawBoard();
+    updateUI(currentPlayer === 'black' ? '黑棋' : '白棋');
+    return true;
+  }
+
+  if (isBoardFull()) {
+    gameOver = true;
+    drawBoard();
+    updateUI(null);
+    return true;
+  }
+
+  currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+  drawBoard();
+  updateUI(null);
+  return true;
+}
+
+function updateUI(winner) {
+  const turnEl = document.getElementById('turnDisplay');
+  const statusEl = document.getElementById('status');
+  if (winner) {
+    turnEl.innerHTML = `<span class="stone ${winner === '黑棋' ? 'black' : 'white'}"></span>${winner}胜!`;
+    statusEl.textContent = `${winner}获胜！点击"重新开始"再来一局`;
+    statusEl.className = 'info win';
+  } else if (isBoardFull()) {
+    turnEl.textContent = '平局';
+    statusEl.textContent = '棋盘已满，平局！';
+    statusEl.className = 'info';
+  } else {
+    turnEl.innerHTML = `<span class="stone ${currentPlayer}"></span>${currentPlayer === 'black' ? '黑棋' : '白棋'}走`;
+    statusEl.textContent = `${currentPlayer === 'black' ? '黑棋' : '白棋'}回合，请落子`;
+    statusEl.className = 'info';
+  }
+}
+
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const col = Math.round((mx - PADDING) / CELL);
+  const row = Math.round((my - PADDING) / CELL);
+  if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) return;
+  if (Math.abs(mx - boardX(col)) > CELL * 0.45 || Math.abs(my - boardY(row)) > CELL * 0.45) return;
+  placeStone(row, col);
+});
+
+document.getElementById('restart').addEventListener('click', () => {
+  board = Array.from({length: SIZE}, () => Array(SIZE).fill(null));
+  currentPlayer = 'black';
+  gameOver = false;
+  moveHistory = [];
+  winCells = [];
+  drawBoard();
+  document.getElementById('turnDisplay').innerHTML = '<span class="stone black"></span>黑棋走';
+  document.getElementById('status').textContent = '黑棋先走，点击棋盘落子';
+  document.getElementById('status').className = 'info';
+});
+
+drawBoard();
+</script>
+</body>
+</html>
