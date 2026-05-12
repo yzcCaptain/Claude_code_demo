@@ -3,7 +3,11 @@
     "allow": [
       "Bash(git --version)",
       "Bash(gh --version)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(python -m py_compile timer_app.py)",
+      "Bash(node \"C:/Users/yzc91/.claude/statusline.js\")"
     ]
   }
 }

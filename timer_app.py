@@ -57,29 +57,38 @@ def enable_acrylic_blur(hwnd):
 
 # ==================== Modern Styled Button ====================
 
+ACCENT = "#7C3AED"
+ACCENT_HOVER = "#6D28D9"
+ACCENT_GLOW = "rgba(124, 58, 237, 0.3)"
+
 class ModernButton(QPushButton):
     """Flat semi-transparent button with hover effect."""
-    def __init__(self, text="", color="#FFFFFF", bg_hover="rgba(255,255,255,0.15)",
-                 bg_pressed="rgba(255,255,255,0.1)", radius=6, padding="6px 16px", font_size="13px"):
+    def __init__(self, text="", color="#FFFFFF", bg_hover="rgba(255,255,255,0.12)",
+                 bg_pressed="rgba(255,255,255,0.06)", radius=8, padding="8px 22px", font_size="13px",
+                 accent=False):
         super().__init__(text)
+        border_color = ACCENT if accent else "rgba(255,255,255,0.15)"
+        hover_border = ACCENT if accent else "rgba(255,255,255,0.3)"
+        hover_bg = ACCENT_GLOW if accent else bg_hover
         self.setStyleSheet(f"""
             QPushButton {{
                 background: transparent;
                 color: {color};
-                border: 1px solid rgba(255,255,255,0.15);
+                border: 1px solid {border_color};
                 border-radius: {radius}px;
                 padding: {padding};
                 font-size: {font_size};
+                font-weight: 400;
             }}
             QPushButton:hover {{
-                background: {bg_hover};
-                border: 1px solid rgba(255,255,255,0.3);
+                background: {hover_bg};
+                border: 1px solid {hover_border};
             }}
             QPushButton:pressed {{
                 background: {bg_pressed};
             }}
             QPushButton:disabled {{
-                color: rgba(255,255,255,0.3);
+                color: rgba(255,255,255,0.2);
                 border: 1px solid rgba(255,255,255,0.05);
             }}
         """)
@@ -89,12 +98,12 @@ class ModernButton(QPushButton):
 # ==================== Main Timer Application ====================
 
 class TimerApp(QWidget):
-    WINDOW_WIDTH = 340
-    WINDOW_HEIGHT = 310
-    COMPACT_HEIGHT = 42
+    WINDOW_WIDTH = 360
+    WINDOW_HEIGHT = 340
+    COMPACT_HEIGHT = 44
 
-    BG_COLOR_DARK = QColor(18, 20, 30, 200)
-    BG_ALERT = QColor(160, 25, 35, 210)
+    BG_COLOR_DARK = QColor(16, 18, 28, 210)
+    BG_ALERT = QColor(180, 20, 30, 220)
 
     def __init__(self):
         super().__init__()
@@ -140,27 +149,27 @@ class TimerApp(QWidget):
     def setup_ui(self):
         # ── Top bar ──
         self.top_bar = QHBoxLayout()
-        self.top_bar.setContentsMargins(12, 6, 12, 0)
+        self.top_bar.setContentsMargins(14, 8, 14, 0)
 
         self.icon_label = QLabel("⏱")
-        self.icon_label.setStyleSheet("font-size: 16px; color: rgba(255,255,255,0.7);")
+        self.icon_label.setStyleSheet("font-size: 15px; color: rgba(255,255,255,0.6);")
 
         self.title_label = QLabel("桌面定时器")
-        self.title_label.setStyleSheet("font-size: 12px; color: rgba(255,255,255,0.5);")
+        self.title_label.setStyleSheet("font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 1px;")
 
         self.top_bar.addWidget(self.icon_label)
         self.top_bar.addWidget(self.title_label)
         self.top_bar.addStretch()
 
         # Compact toggle button
-        self.compact_btn = ModernButton("—", padding="4px 10px", font_size="14px")
-        self.compact_btn.setFixedSize(28, 24)
+        self.compact_btn = ModernButton("—", padding="4px 10px", font_size="16px", color="rgba(255,255,255,0.4)")
+        self.compact_btn.setFixedSize(26, 24)
         self.compact_btn.clicked.connect(self.toggle_compact)
         self.compact_btn.setToolTip("折叠到顶部")
 
         # Close button
-        self.close_btn = ModernButton("✕", bg_hover="rgba(200,40,40,0.7)", padding="4px 10px", font_size="14px")
-        self.close_btn.setFixedSize(28, 24)
+        self.close_btn = ModernButton("✕", bg_hover="rgba(220,40,40,0.6)", padding="4px 10px", font_size="14px", color="rgba(255,255,255,0.4)")
+        self.close_btn.setFixedSize(26, 24)
         self.close_btn.clicked.connect(self.close_app)
         self.close_btn.setToolTip("关闭")
 
@@ -171,24 +180,22 @@ class TimerApp(QWidget):
         self.time_label = QLabel("25:00")
         self.time_label.setAlignment(Qt.AlignCenter)
         self.time_label.setStyleSheet("color: white;")
-        self.time_label.setGraphicsEffect(QGraphicsDropShadowEffect(
-            blurRadius=8, offset=QPoint(0, 2), color=QColor(0, 0, 0, 80)))
 
-        time_font = QFont("Consolas", 54, QFont.Weight.Light)
+        time_font = QFont("Consolas", 56, QFont.Weight.Light)
         time_font.setStyleHint(QFont.Monospace)
         self.time_label.setFont(time_font)
-        self.time_label.setFixedHeight(80)
+        self._apply_time_label_style()
 
         # ── Mode selector ──
         self.mode_layout = QHBoxLayout()
-        self.mode_layout.setContentsMargins(40, 0, 40, 0)
-        self.mode_layout.setSpacing(0)
+        self.mode_layout.setContentsMargins(60, 0, 60, 0)
+        self.mode_layout.setSpacing(4)
 
         self.countdown_btn = QPushButton("倒计时")
         self.stopwatch_btn = QPushButton("正计时")
         for btn in (self.countdown_btn, self.stopwatch_btn):
             btn.setCursor(Qt.PointingHandCursor)
-            btn.setFixedHeight(30)
+            btn.setFixedHeight(32)
             btn.setCheckable(True)
 
         self.countdown_btn.setChecked(True)
@@ -201,7 +208,7 @@ class TimerApp(QWidget):
 
         # ── Time input (hours : minutes : seconds) ──
         self.input_layout = QHBoxLayout()
-        self.input_layout.setContentsMargins(60, 0, 60, 0)
+        self.input_layout.setContentsMargins(70, 0, 70, 0)
         self.input_layout.setAlignment(Qt.AlignCenter)
 
         self.h_spin = QSpinBox()
@@ -209,25 +216,26 @@ class TimerApp(QWidget):
         self.s_spin = QSpinBox()
 
         for spin, maxv, w in [
-            (self.h_spin, 99, 55), (self.m_spin, 59, 45), (self.s_spin, 59, 45)
+            (self.h_spin, 99, 56), (self.m_spin, 59, 48), (self.s_spin, 59, 48)
         ]:
             spin.setRange(0, maxv)
             spin.setFixedWidth(w)
-            spin.setFixedHeight(32)
+            spin.setFixedHeight(34)
             spin.setAlignment(Qt.AlignCenter)
             spin.setButtonSymbols(QSpinBox.NoButtons)
             spin.setStyleSheet(f"""
                 QSpinBox {{
-                    background: transparent;
+                    background: rgba(255,255,255,0.04);
                     color: white;
-                    border: none;
-                    border-bottom: 1px solid rgba(255,255,255,0.2);
-                    font-size: 20px;
+                    border: 1px solid rgba(255,255,255,0.08);
+                    border-radius: 6px;
+                    font-size: 18px;
                     font-weight: 300;
                     padding: 2px 0;
                 }}
                 QSpinBox:focus {{
-                    border-bottom: 1px solid #7C3AED;
+                    border: 1px solid {ACCENT};
+                    background: rgba(124,58,237,0.08);
                 }}
                 QSpinBox::up-button, QSpinBox::down-button {{ width: 0px; }}
             """)
@@ -236,7 +244,7 @@ class TimerApp(QWidget):
         self.m_spin.setValue(25)
         self.s_spin.setValue(0)
 
-        sep_style = "color: rgba(255,255,255,0.3); font-size: 20px; padding: 0 2px;"
+        sep_style = "color: rgba(255,255,255,0.2); font-size: 18px; padding: 0 4px;"
         sep1 = QLabel(":")
         sep2 = QLabel(":")
         for s in (sep1, sep2):
@@ -251,13 +259,13 @@ class TimerApp(QWidget):
         # ── Control buttons ──
         self.ctrl_layout = QHBoxLayout()
         self.ctrl_layout.setContentsMargins(40, 0, 40, 0)
-        self.ctrl_layout.setSpacing(12)
+        self.ctrl_layout.setSpacing(10)
 
-        self.start_btn = ModernButton("▶  开始", padding="10px 28px", font_size="14px")
+        self.start_btn = ModernButton("▶  开始", padding="10px 30px", font_size="14px", accent=True)
         self.start_btn.clicked.connect(self.toggle_start)
         self.start_btn.setToolTip("开始 / 暂停")
 
-        self.reset_btn = ModernButton("⟳  重置", padding="10px 28px", font_size="14px")
+        self.reset_btn = ModernButton("⟳  重置", padding="10px 30px", font_size="14px")
         self.reset_btn.clicked.connect(self.reset)
         self.reset_btn.setToolTip("重置")
 
@@ -269,22 +277,22 @@ class TimerApp(QWidget):
         # ── Status label (hidden by default) ──
         self.status_label = QLabel("")
         self.status_label.setAlignment(Qt.AlignCenter)
-        self.status_label.setStyleSheet("color: #F87171; font-size: 16px; font-weight: bold;")
+        self.status_label.setStyleSheet("color: #F87171; font-size: 15px; font-weight: 500; letter-spacing: 0.5px;")
         self.status_label.hide()
 
         # ── Main layout ──
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(16, 0, 16, 16)
+        self.main_layout.setContentsMargins(20, 0, 20, 20)
         self.main_layout.setSpacing(2)
 
         self.main_layout.addLayout(self.top_bar)
-        self.main_layout.addSpacing(4)
-        self.main_layout.addWidget(self.time_label)
-        self.main_layout.addSpacing(4)
-        self.main_layout.addLayout(self.mode_layout)
         self.main_layout.addSpacing(6)
+        self.main_layout.addWidget(self.time_label)
+        self.main_layout.addSpacing(6)
+        self.main_layout.addLayout(self.mode_layout)
+        self.main_layout.addSpacing(8)
         self.main_layout.addLayout(self.input_layout)
-        self.main_layout.addSpacing(10)
+        self.main_layout.addSpacing(12)
         self.main_layout.addLayout(self.ctrl_layout)
         self.main_layout.addWidget(self.status_label)
 
@@ -295,6 +303,12 @@ class TimerApp(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
         self.timer.setInterval(1000)
+
+    def _apply_time_label_style(self):
+        self.time_label.setFixedHeight(90)
+        self.time_label.setAlignment(Qt.AlignCenter)
+        self.time_label.setGraphicsEffect(QGraphicsDropShadowEffect(
+            blurRadius=12, offset=QPoint(0, 2), color=QColor(124, 58, 237, 60)))
 
     # ────────── Mode ──────────
 
@@ -309,26 +323,27 @@ class TimerApp(QWidget):
         self.reset_state()
 
     def update_mode_style(self):
-        active = """
-            QPushButton {
-                background: rgba(124, 58, 237, 0.35);
+        active = f"""
+            QPushButton {{
+                background: {ACCENT_GLOW};
                 color: white;
-                border: 1px solid rgba(124, 58, 237, 0.6);
+                border: 1px solid rgba(124, 58, 237, 0.5);
                 border-radius: 6px;
-                font-size: 13px;
-            }
+                font-size: 12px;
+                font-weight: 500;
+            }}
         """
         inactive = """
             QPushButton {
                 background: transparent;
-                color: rgba(255,255,255,0.5);
-                border: 1px solid rgba(255,255,255,0.1);
+                color: rgba(255,255,255,0.4);
+                border: 1px solid rgba(255,255,255,0.06);
                 border-radius: 6px;
-                font-size: 13px;
+                font-size: 12px;
             }
             QPushButton:hover {
-                background: rgba(255,255,255,0.08);
-                border: 1px solid rgba(255,255,255,0.25);
+                background: rgba(255,255,255,0.06);
+                border: 1px solid rgba(255,255,255,0.15);
             }
         """
         self.countdown_btn.setStyleSheet(active if self.countdown_btn.isChecked() else inactive)
@@ -530,7 +545,7 @@ class TimerApp(QWidget):
         self.time_label.setGraphicsEffect(None)
 
         # Compact time font
-        self.time_label.setFont(QFont("Consolas", 26, QFont.Weight.Normal))
+        self.time_label.setFont(QFont("Consolas", 28, QFont.Weight.Normal))
         self.time_label.setFixedHeight(self.COMPACT_HEIGHT)
         self.time_label.setAlignment(Qt.AlignCenter)
 
@@ -559,12 +574,9 @@ class TimerApp(QWidget):
         if hasattr(self, '_status_was_visible') and not self._status_was_visible:
             self.status_label.hide()
 
-        # Restore time font
-        self.time_label.setFont(QFont("Consolas", 54, QFont.Weight.Light))
-        self.time_label.setFixedHeight(80)
-        self.time_label.setAlignment(Qt.AlignCenter)
-        self.time_label.setGraphicsEffect(QGraphicsDropShadowEffect(
-            blurRadius=8, offset=QPoint(0, 2), color=QColor(0, 0, 0, 80)))
+        # Restore time display style
+        self.time_label.setFont(QFont("Consolas", 56, QFont.Weight.Light))
+        self._apply_time_label_style()
 
         # Update compact button text
         self.compact_btn.setText("—")
@@ -607,25 +619,8 @@ class TimerApp(QWidget):
                 # Dragging from compact mode — if moved enough, exit compact and follow mouse
                 delta = event.globalPosition().toPoint() - self._press_pos
                 if abs(delta.y()) > 15:
-                    # Remember x position
                     old_x = self.normal_geometry.x() if self.normal_geometry else self.x()
-                    was_visible = getattr(self, '_status_was_visible', False)
-                    # Exit compact mode (restore size & widgets)
-                    self.compact_mode = False
-                    if hasattr(self, '_normal_margins'):
-                        self.main_layout.setContentsMargins(self._normal_margins)
-                    self.setFixedHeight(self.WINDOW_HEIGHT)
-                    self.setFixedWidth(self.WINDOW_WIDTH)
-                    self._set_compact_widgets_visible(True)
-                    if not was_visible:
-                        self.status_label.hide()
-                    self.time_label.setFont(QFont("Consolas", 54, QFont.Weight.Light))
-                    self.time_label.setFixedHeight(80)
-                    self.time_label.setAlignment(Qt.AlignCenter)
-                    self.time_label.setGraphicsEffect(QGraphicsDropShadowEffect(
-                        blurRadius=8, offset=QPoint(0, 2), color=QColor(0, 0, 0, 80)))
-                    self.compact_btn.setText("—")
-                    self.update_mode_visibility()
+                    self.exit_compact_mode()
                     # Move window so cursor grabs the title-bar area
                     cursor_y = int(event.globalPosition().y())
                     self.move(old_x, max(0, cursor_y - 40))
