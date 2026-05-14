@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer, QRect, QRectF, QPoint, QMetaObject, Signal
 from PySide6.QtGui import (
-    QFont, QPainter, QColor, QPen, QPainterPath, QMouseEvent, QLinearGradient
+    QFont, QPainter, QColor, QPen, QPainterPath, QMouseEvent, QLinearGradient, QIcon
 )
 
 # ==================== Excel Config ====================
@@ -835,6 +835,7 @@ if __name__ == "__main__":
     app.setPalette(palette)
 
     window = DailyPlanApp()
+    window.setWindowIcon(QIcon("D:/Code_Project/Claude_code_project/demo/app.ico"))
     screen = app.primaryScreen().availableGeometry()
     window.move(
         (screen.width() - window.width()) // 2,
