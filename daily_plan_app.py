@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer, QRect, QRectF, QPoint, QMetaObject, Signal
 from PySide6.QtGui import (
-    QFont, QPainter, QColor, QPen, QPainterPath, QMouseEvent
+    QFont, QPainter, QColor, QPen, QPainterPath, QMouseEvent, QLinearGradient
 )
 
 # ==================== Excel Config ====================
@@ -144,8 +144,6 @@ def mark_done(row_num, done=True):
         return False
     except Exception as e:
         print(f"[ERROR] 保存失败: {e}")
-        import traceback
-        traceback.print_exc()
         return False
 
 # ==================== Modern Button ====================
@@ -223,10 +221,14 @@ class DateSection(QFrame):
 
         # 日期标题行（可点击折叠）
         header = QFrame()
-        header.setStyleSheet("background: rgba(255,255,255,0.03); border-radius: 6px;")
+        header.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(80,60,140,80), stop:1 rgba(60,50,100,60));
+            border-radius: 8px;
+            border: 1px solid rgba(100,80,180,60);
+        """)
         header_h = QHBoxLayout(header)
-        header_h.setContentsMargins(10, 6, 10, 6)
-        header_h.setSpacing(8)
+        header_h.setContentsMargins(12, 8, 12, 8)
+        header_h.setSpacing(10)
 
         self.toggle_btn = QLabel("▼" if not self.collapsed else "▶")
         self.toggle_btn.setStyleSheet("color: rgba(255,255,255,0.4); font-size: 10px;")
@@ -284,8 +286,9 @@ class TaskItem(QFrame):
 
     def setup_ui(self):
         self.setStyleSheet("background: transparent;")
-        self.setFixedHeight(48)
+        self.setFixedHeight(52)
         self.setMinimumWidth(300)
+        self.setObjectName("taskItem")
 
         # 初始化滚动相关属性（需要在_apply_done_style之前）
         self._marquee_text = self.task_data["task"]
@@ -293,15 +296,15 @@ class TaskItem(QFrame):
         self._marquee_timer = None
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 4, 12, 4)
-        layout.setSpacing(10)
+        layout.setContentsMargins(14, 6, 14, 6)
+        layout.setSpacing(12)
 
         # Checkbox
         self.cb = QCheckBox()
         self.cb.setStyleSheet("""
-            QCheckBox { spacing: 8px; }
-            QCheckBox::indicator { width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: transparent; }
-            QCheckBox::indicator:checked { background: rgba(124,58,237,0.4); border-color: #7C3AED; }
+            QCheckBox { spacing: 10px; }
+            QCheckBox::indicator { width: 20px; height: 20px; border-radius: 6px; border: 1px solid rgba(100,80,180,100); background: rgba(30,30,50,120); }
+            QCheckBox::indicator:checked { background: rgba(80,180,120,60); border-color: rgba(80,200,140,120); }
         """)
         self.cb.stateChanged.connect(self._on_checked)
 
@@ -401,7 +404,6 @@ class TaskItem(QFrame):
 
     def _on_checked(self, state):
         done = (state == 2)  # PySide6: stateChanged发射的state是整数2代表Checked
-        print(f"[DEBUG] _on_checked: state={state}, done={done}")
         if done:
             self._set_saving_state()
         else:
@@ -460,10 +462,12 @@ class TaskItem(QFrame):
 # ==================== Main Application ====================
 
 class DailyPlanApp(QWidget):
-    WINDOW_WIDTH = 360
+    WINDOW_WIDTH = 360  # 正常模式宽度
     WINDOW_HEIGHT = 520
-    COMPACT_HEIGHT = 24  # 紧凑模式高度，42太宽
-    BG_COLOR = QColor(16, 18, 28, 215)
+    COMPACT_HEIGHT = 24  # 紧凑模式高度
+    COMPACT_WIDTH = 280  # 紧凑模式宽度
+    BG_COLOR = QColor(35, 35, 65, 255)  # 渐变起始色（深紫）
+    BG_COLOR_END = QColor(15, 55, 95, 255)  # 渐变结束色（深蓝）
     BG_ALERT = QColor(180, 20, 30, 220)
 
     # 信号：ok表示是否保存成功，done_ref表示原本意图是完成还是取消，widget是要更新的组件
@@ -503,7 +507,8 @@ class DailyPlanApp(QWidget):
     def showEvent(self, event):
         super().showEvent(event)
         if not self._blur_set and self.winId():
-            enable_acrylic_blur(int(self.winId()))
+            # 移除 acrylic blur（它不支持真正的透明背景）
+            # enable_acrylic_blur(int(self.winId()))
             self._blur_set = True
 
     # ────────── UI Setup ──────────
@@ -541,9 +546,9 @@ class DailyPlanApp(QWidget):
         # ── Compact mode label (hidden by default) ──
         self.compact_label = QLabel()
         self.compact_label.setFixedHeight(self.COMPACT_HEIGHT)
-        self.compact_label.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+        self.compact_label.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
         self.compact_label.setFont(QFont("Consolas", 14, QFont.Weight.Normal))
-        self.compact_label.setStyleSheet("color: rgba(255,255,255,0.7); font-size: 14px; padding-top: -10px;")
+        self.compact_label.setStyleSheet("color: rgba(255,255,255,0.7); font-size: 14px; background: transparent;")
         self.compact_label.hide()
 
         # ── Task scroll area ──
@@ -658,12 +663,10 @@ class DailyPlanApp(QWidget):
         # 保存widget引用和done状态，用于线程回调
         widget_ref = widget
         done_ref = done
-        print(f"[DEBUG] _on_task_toggle: row_num={row_num}, done={done}, done_ref={done_ref}")
 
         # 后台线程写Excel，写完后通过信号回调主线程
         def do_save():
             ok = mark_done(row_num, done)
-            print(f"[DEBUG] do_save: ok={ok}, done={done}")
             # 用信号把结果传回主线程（信号机制保证跨线程安全）
             self._thread_callback.emit(ok, done_ref, widget_ref)
 
@@ -671,7 +674,6 @@ class DailyPlanApp(QWidget):
 
     def _on_thread_result(self, ok, done_ref, widget):
         """信号槽回调，在主线程执行UI更新"""
-        print(f"[DEBUG] _on_thread_result: ok={ok}, done_ref={done_ref}")
         if ok:
             widget.mark_synced("done" if done_ref else "undo")
         else:
@@ -692,10 +694,13 @@ class DailyPlanApp(QWidget):
         self.normal_geometry = self.geometry()
 
         self._normal_margins = self.main_layout.contentsMargins()
-        self.main_layout.setContentsMargins(8, 0, 8, 0)  # 无顶部间距，内容区就是36px
+        # 紧凑模式：上下左右都收紧
+        self.main_layout.setContentsMargins(2, 0, 2, 0)
+        self.top_bar.setContentsMargins(8, 4, 8, 0)
+        self.bottom_bar.setContentsMargins(8, 4, 8, 0)
 
         x = self.normal_geometry.x()
-        self.setFixedHeight(self.COMPACT_HEIGHT)
+        self.setFixedSize(self.COMPACT_WIDTH, self.COMPACT_HEIGHT)
         self.move(x, 0)
 
         self.scroll.hide()
@@ -705,7 +710,7 @@ class DailyPlanApp(QWidget):
 
         self.compact_label.setFont(QFont("Consolas", 14, QFont.Weight.Normal))
         self.compact_label.setFixedHeight(self.COMPACT_HEIGHT)
-        self.compact_label.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+        self.compact_label.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
         self.compact_label.setGraphicsEffect(None)
 
         self._update_compact_display()
@@ -717,11 +722,17 @@ class DailyPlanApp(QWidget):
 
         if hasattr(self, '_normal_margins'):
             self.main_layout.setContentsMargins(self._normal_margins)
+            self.top_bar.setContentsMargins(14, 8, 14, 0)
+            self.bottom_bar.setContentsMargins(14, 8, 14, 0)
 
         self.setFixedHeight(self.WINDOW_HEIGHT)
         self.setFixedWidth(self.WINDOW_WIDTH)
         if self.normal_geometry:
-            self.setGeometry(self.normal_geometry)
+            geo = self.normal_geometry
+            # 确保 y 不为负数，顶部与屏幕顶部对齐
+            if geo.top() < 0:
+                geo = QRect(geo.left(), 0, geo.width(), geo.height())
+            self.setGeometry(geo)
 
         self.scroll.show()
         self.bottom_bar_widget.show()
@@ -730,7 +741,7 @@ class DailyPlanApp(QWidget):
 
         self.compact_label.setFont(QFont("Consolas", 14, QFont.Weight.Normal))
         self.compact_label.setFixedHeight(self.COMPACT_HEIGHT)
-        self.compact_label.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+        self.compact_label.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
 
     def _set_compact_widgets_visible(self, visible):
         pass  # managed via explicit show/hide
@@ -794,22 +805,20 @@ class DailyPlanApp(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        path = QPainterPath()
-        r = self.rect()
-        if self.compact_mode:
-            corner = 8
-            path.moveTo(r.left(), r.top())
-            path.lineTo(r.right(), r.top())
-            path.lineTo(r.right(), r.bottom() - corner)
-            path.quadTo(r.right(), r.bottom(), r.right() - corner, r.bottom())
-            path.lineTo(r.left() + corner, r.bottom())
-            path.quadTo(r.left(), r.bottom(), r.left(), r.bottom() - corner)
-            path.closeSubpath()
-        else:
-            path.addRoundedRect(QRectF(r), 12, 12)
 
+        # 获取绘制区域
+        r = self.rect()
+
+        if self.compact_mode:
+            # 紧凑模式：纯色填充，四角圆角
+            corner = 12
+        else:
+            corner = 16
+
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(r), corner, corner)
         painter.fillPath(path, self.BG_COLOR)
-        painter.setPen(QPen(QColor(255, 255, 255, 20), 1))
+        painter.setPen(QPen(QColor(100, 80, 180, 80), 1.5))
         painter.drawPath(path)
 
 
