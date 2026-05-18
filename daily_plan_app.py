@@ -464,7 +464,7 @@ class TaskItem(QFrame):
 class DailyPlanApp(QWidget):
     WINDOW_WIDTH = 360  # 正常模式宽度
     WINDOW_HEIGHT = 520
-    COMPACT_HEIGHT = 24  # 紧凑模式高度
+    COMPACT_HEIGHT = 30  # 紧凑模式高度
     COMPACT_WIDTH = 280  # 紧凑模式宽度
     BG_COLOR = QColor(35, 35, 65, 255)  # 渐变起始色（深紫）
     BG_COLOR_END = QColor(15, 55, 95, 255)  # 渐变结束色（深蓝）
@@ -531,8 +531,8 @@ class DailyPlanApp(QWidget):
         # Refresh button
         self.refresh_btn = ModernButton("↻", padding="4px 10px", font_size="14px", color="rgba(255,255,255,0.5)")
         self.refresh_btn.setFixedSize(26, 24)
-        self.refresh_btn.clicked.connect(self.reload_tasks)
-        self.refresh_btn.setToolTip("刷新任务")
+        self.refresh_btn.clicked.connect(self.enter_compact_mode)
+        self.refresh_btn.setToolTip("进入紧凑模式")
 
         # Close button
         self.close_btn = ModernButton("✕", bg_hover="rgba(220,40,40,0.6)", padding="4px 10px", font_size="14px", color="rgba(255,255,255,0.5)")
@@ -546,7 +546,7 @@ class DailyPlanApp(QWidget):
         # ── Compact mode label (hidden by default) ──
         self.compact_label = QLabel()
         self.compact_label.setFixedHeight(self.COMPACT_HEIGHT)
-        self.compact_label.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
+        self.compact_label.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
         self.compact_label.setFont(QFont("Consolas", 14, QFont.Weight.Normal))
         self.compact_label.setStyleSheet("color: rgba(255,255,255,0.7); font-size: 14px; background: transparent;")
         self.compact_label.hide()
@@ -701,7 +701,7 @@ class DailyPlanApp(QWidget):
 
         x = self.normal_geometry.x()
         self.setFixedSize(self.COMPACT_WIDTH, self.COMPACT_HEIGHT)
-        self.move(x, 0)
+        self.move(x, -15)  # 设置为 -10，让窗口略微露出屏幕
 
         self.scroll.hide()
         self.bottom_bar_widget.hide()
@@ -710,7 +710,7 @@ class DailyPlanApp(QWidget):
 
         self.compact_label.setFont(QFont("Consolas", 14, QFont.Weight.Normal))
         self.compact_label.setFixedHeight(self.COMPACT_HEIGHT)
-        self.compact_label.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
+        self.compact_label.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
         self.compact_label.setGraphicsEffect(None)
 
         self._update_compact_display()
@@ -741,7 +741,7 @@ class DailyPlanApp(QWidget):
 
         self.compact_label.setFont(QFont("Consolas", 14, QFont.Weight.Normal))
         self.compact_label.setFixedHeight(self.COMPACT_HEIGHT)
-        self.compact_label.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
+        self.compact_label.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
 
     def _set_compact_widgets_visible(self, visible):
         pass  # managed via explicit show/hide
